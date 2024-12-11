@@ -10,7 +10,7 @@ Os códigos estão sendo atualizados na medida em que são recebidos, segundo a 
 
 # Em anonimização e revisão
 
-https://github.com/InovaFiscaliza/RepositorioFerramentasGRs_
+https://github.com/InovaFiscaliza/RepositorioFerramentasGRs.
 
 https://github.com/InovaFiscaliza/RepositorioFerramentasGRs_
 
