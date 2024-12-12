@@ -69,8 +69,8 @@ from pprint import pprint
 
 
 
-guiapplink = "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
-default_dockerfile = "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile"
+guiapplink = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/src/GuiApp.py" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
+default_dockerfile = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/src/Dockerfile" # "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile"
 
 nomeapp = "Gui trivial para linha de comando"
 nomeappgui = nomeapp
@@ -80,7 +80,7 @@ cmdline = "ping"
 descapp = "Gui trivial para linha de comando"
 
 
-appver = "Versão beta Gui 20241121 " 
+appver = "Versão beta Gui 202412121850 " 
 
 arquivosenha = "corrigir_este_codigo.txt"
 

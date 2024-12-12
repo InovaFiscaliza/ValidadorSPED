@@ -4896,7 +4896,7 @@ debug(os.environ)
 if __name__ == "__main__":
 
     log(f"Arguments: {sys.argv}" )
-    args = docopt(__doc__, version="202411210000")
+    args = docopt(__doc__, version="202412121850")
 
 
 
