@@ -421,9 +421,13 @@ async def main(page: ft.Page):
         try: 
             gui = requests.get(guiapplink)
             if gui.status_code == 200:
+                try:
+                    tst = gui.headers['Last-Modified']
+                except:
+                    tst = gui.headers['ETag']
                 # comparar e tratar aqui versões antes de salvar em cfg['atualizacao-gui']
-                if cfg['atualizacao-gui'] != gui.headers['Last-Modified']:
-                    cfg['versao-disponivel-gui'] = gui.headers['Last-Modified']
+                if cfg['atualizacao-gui'] != tst:
+                    cfg['versao-disponivel-gui'] = tst
                     print(f"*** cfg['versao-disponivel-gui']: {cfg['versao-disponivel-gui']}")
         except:
             pass
@@ -438,7 +442,7 @@ async def main(page: ft.Page):
         print(f"*** inicio config {data0}")
         print(f"*** inicio config {data0.strftime("%d/%m/%Y %H:%M:%S")}")
 
-        if True: #if not await existe('cfg.json'):
+        if not await existe('cfg.json'):
 
             try:
 
@@ -459,15 +463,17 @@ async def main(page: ft.Page):
                 print(f"gui.headers: {gui.headers}")
                 if gui.status_code == 200:
                     # comparar e tratar aqui versões antes de salvar em cfg['atualizacao-gui']
-                    cfg['atualizacao-gui'] = gui.headers['Last-Modified']
-
+                    try:
+                        cfg['atualizacao-gui'] = gui.headers['Last-Modified']
+                    except:
+                        cfg['atualizacao-gui'] = gui.headers['ETag']# ETag
 
                 pathdockerfile = default_dockerfile
                 path = pathdockerfile[:(pathdockerfile.rfind('/') + 1)] 
                 dock = requests.get(pathdockerfile)
                 headers = dock.headers
-                print(f"get dockerfile:\n{dock.headers['Last-Modified']}")
-                pprint(dock.headers)
+                # print(f"get dockerfile:\n{dock.headers['Last-Modified']}")
+                # pprint(dock.headers)
                 if dock.status_code == 200:
                     dockerfile = dock.text
                     for line in dockerfile.splitlines():
@@ -616,7 +622,10 @@ async def main(page: ft.Page):
                     cfg['descricao-app'] = descapp0
                     cfg['cmd-app'] = cmdline0
                     cfg['url-app'] = pathdockerfile
-                    cfg['atualizacao-app'] = req.headers['Last-Modified'] ## comparar e tratar aqui versões antes de salvar em cfg['atualizacao-app']
+                    try:
+                        cfg['atualizacao-app'] = req.headers['Last-Modified'] ## comparar e tratar aqui versões antes de salvar em cfg['atualizacao-app']
+                    except:
+                        cfg['atualizacao-app'] = req.headers['ETag']
                     cfg['versao-app'] = appver0 
                     cfg['descricao-cmd-app'] = descricao2
                     cfg['args-app'] = largs2
