@@ -113,19 +113,9 @@ link = ""
 resultadosexistentes = False # corrigir erro
 relanteriores = {}
 test = "bWFpbHRvOnNlcmdpb3NxQGFuYXRlbC5nb3YuYnI/c3ViamVjdD1FcnJvcyUyMGUlMjBTdWdlc3QlQzMlQjVlcyUyMA" # eliminar variáveis globais, criar classes , etc ..
-listatemporaria = [] 
-# tabela bruta validada expandida
-res_val = pd.DataFrame(columns=["Ano Fiscal","Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro","Jan inválidos","Fev inválidos","Mar inválidos","Abr inválidos","Mai inválidos","Jun inválidos","Jul inválidos","Ago inválidos","Set inválidos","Out inválidos","Nov inválidos","Dez inválidos","Prestadora","CNPJ","Tipo","UF","Data Inicial","Data Final","Resultado da Validação","Origem do Arquivo"])
-# dados brutos validados
-res_brutos = pd.DataFrame()
-# tabela filtrada
-res_filtrada = pd.DataFrame()
-# tabela expandida
-res_espandida = pd.DataFrame()
-# path origem
-vpath =  pd.DataFrame(columns=["origem","destino"]) 
-# último resultado anterior
-res_val_r = pd.DataFrame()
+
+
+dtfatual = pd.DataFrame()
 
 
 fmt = {}
@@ -448,7 +438,7 @@ async def main(page: ft.Page):
         print(f"*** inicio config {data0}")
         print(f"*** inicio config {data0.strftime("%d/%m/%Y %H:%M:%S")}")
 
-        if not await existe('cfg.json'):
+        if True: #if not await existe('cfg.json'):
 
             try:
 
@@ -466,6 +456,7 @@ async def main(page: ft.Page):
 
                 # esta gui
                 gui = requests.get(guiapplink)
+                print(f"gui.headers: {gui.headers}")
                 if gui.status_code == 200:
                     # comparar e tratar aqui versões antes de salvar em cfg['atualizacao-gui']
                     cfg['atualizacao-gui'] = gui.headers['Last-Modified']
@@ -667,7 +658,8 @@ async def main(page: ft.Page):
 
             except:
                 print(f"Erro de conexão ao baixar configurações iniciais do App")
-                exit()
+                if not await existe('cfg.json'):
+                    exit()
 
         print(f"le_offline('cfg.json'): >{await le_offline('cfg.json')}<")
 
@@ -710,7 +702,7 @@ async def main(page: ft.Page):
 
     def escolhe_pasta(e):
 
-        global pastaRaiz, RepositorioAppLocal, args
+        global  RepositorioAppLocal, args
 
         print(f"escolhe pasta (e.control.data): {(e.control.data)}")
         preparando('lendo conteudo')
@@ -720,7 +712,7 @@ async def main(page: ft.Page):
 
 
         def dir_clicked(e):
-            global pastaRaiz, RepositorioAppLocal
+            global  RepositorioAppLocal
             preparando('lendo conteudo')
             args[i].data = e.control.data # e.control.data vem da escolha clickada
             args[i].value = f"file://{e.control.data}" # e.control.value vem da escolha clickada
@@ -748,11 +740,12 @@ async def main(page: ft.Page):
 
             print(f"*** >{args[i].data}<")
 
-            if pastaRaiz == "/":
-                confirm = Container(ft.ElevatedButton(f"Confirmar pasta file://{str(args[i].data)} e voltar", disabled=True, icon=ft.icons.DONE_ALL,  on_click=pg_ini),)
-            else:
-                confirm = Container(ft.ElevatedButton(f"Confirmar pasta file://{str(args[i].data)} e voltar", icon=ft.icons.DONE_ALL,  on_click=pg_ini),)
+            # if pastaRaiz == "/":
+            #     confirm = Container(ft.ElevatedButton(f"Confirmar pasta file://{str(args[i].data)} e voltar", disabled=True, icon=ft.icons.DONE_ALL,  on_click=pg_ini),)
+            # else:
+            #     confirm = Container(ft.ElevatedButton(f"Confirmar pasta file://{str(args[i].data)} e voltar", icon=ft.icons.DONE_ALL,  on_click=pg_ini),)
 
+            confirm = Container(ft.ElevatedButton(f"Confirmar pasta file://{str(args[i].data)} e voltar", icon=ft.icons.DONE_ALL,  on_click=pg_ini),)
 
             filelist = cmd_interface(["python", cfg['cmd-app'], '--dir' , args[i].data  ], True)
 
@@ -833,10 +826,10 @@ async def main(page: ft.Page):
         crialistagem()
 
 
-    def pasta_inicial(e):
-        if e.path is None: return
-        global pastaRaiz, RepositorioAppLocal
-        pastaRaiz = e.path
+    # def pasta_inicial(e):
+    #     if e.path is None: return
+    #     global pastaRaiz, RepositorioAppLocal
+    #     pastaRaiz = e.path
 
 
 
@@ -1038,7 +1031,7 @@ async def main(page: ft.Page):
 
     def relatorio(idx):
 
-        global fmt, arquivosenha, pastaRaiz, RepositorioAppLocal, vpcnt, cntanon0, tcodec, cnpj_, ano_, prest_, log_, pathprestok
+        global fmt, arquivosenha,  RepositorioAppLocal, vpcnt, cntanon0, tcodec, cnpj_, ano_, prest_, log_, pathprestok
 
         #pathprestok = f"{log_}/RelatorioValidatorTributario_{re.sub(r"[^A-Za-z0-9_()]", "",cnpj_)}_{ano_}"
         # path = f"{logcmd_}/RelatorioValidatorTributario_{pathprestok}.md"
@@ -1107,7 +1100,7 @@ async def main(page: ft.Page):
 
     def cmd_script(e):
 
-        global relanteriores, arquivosenha, pastaRaiz, RepositorioAppLocal, vpcnt, cntanon0, tcodec, cnpj_, ano_, prest_, log_, pathprestok
+        global relanteriores, arquivosenha, RepositorioAppLocal, vpcnt, cntanon0, tcodec, cnpj_, ano_, prest_, log_, pathprestok
 
         # if len(ano_ft.value) == 4 and int(ano_ft.value) > 2010:
         #     ano_ = ano_ft.value
@@ -1220,9 +1213,9 @@ async def main(page: ft.Page):
 
         print(f"e.control.data: {e.control.data} stringo: ")
 
-        res_val_r = pd.read_json(StringIO(stringo), orient='records')
+        dtfatual = pd.read_json(StringIO(stringo), orient='records')
 
-        #res_val_r = base64.b64decode(cmd_interface(["python", cmdline, "--file", relanteriores['relatorios'][idx]['dataframes-template'] ], True)) 
+        #dtfatual = base64.b64decode(cmd_interface(["python", cmdline, "--file", relanteriores['relatorios'][idx]['dataframes-template'] ], True)) 
 
 
         def click_tabela(e):
@@ -1402,11 +1395,11 @@ async def main(page: ft.Page):
 
             global linscroll
 
-            rowtop = ft.Row(spacing=5, controls=headers(res_val_r,  fmt))
+            rowtop = ft.Row(spacing=5, controls=headers(dtfatual,  fmt))
 
             lv = ft.ListView(expand=True, spacing=2, on_scroll=on_column_scroll,)
 
-            linhas = rows(res_val_r, fmt)
+            linhas = rows(dtfatual, fmt)
             lv.controls.append( linhas)
 
 
@@ -1441,14 +1434,14 @@ async def main(page: ft.Page):
 
     def pg_ini(e):
         
-        global relanteriores, iduuid, args, descapp, nomeapp, pastaRaiz, RepositorioAppLocal, pasta_in, cntanon, cntanon0, ddeep, listatemporaria, res_val, fmt, tipos, estados, meses, meserr, res_val_r, vpath, data_, resultadosexistentes, pathprestok
+        global relanteriores, iduuid, args, descapp, nomeapp, RepositorioAppLocal, pasta_in, cntanon, cntanon0, ddeep,  fmt, tipos, estados, meses, meserr, dtfatual, vpath, data_, resultadosexistentes, pathprestok
 
         cntanon = 0
         cntanon0 = 0
 
 
         preparando('atualizando relatórios')
-        #config()
+        config()
         atualizacoes()
         relanteriores = cmd_interface(["python", cfg['cmd-app'], "--relatorios" ], True) # 
         salva_debug_backup('debug_anteriores.json', json.dumps(relanteriores)) # debug
@@ -1635,7 +1628,7 @@ async def main(page: ft.Page):
 
 
 
-    global nomeapp, appver , pastaRaiz, resultadosexistentes #, cnpj_, ano_, prest_
+    global nomeapp, appver , resultadosexistentes #, cnpj_, ano_, prest_
 
 
 
