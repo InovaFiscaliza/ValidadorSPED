@@ -9,6 +9,7 @@ import base64
 import subprocess
 import webbrowser
 from subprocess import check_output, Popen
+import platform
 import sys
 import os
 import io
@@ -70,6 +71,9 @@ from pprint import pprint
 
 
 guiapplink = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/dist/GuiApp" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
+if platform.system() == "windows":
+   guiapplink += ".exe"  
+
 default_dockerfile = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/Dockerfile" # "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile"
 
 nomeapp = "Gui trivial para linha de comando"
@@ -419,7 +423,8 @@ async def main(page: ft.Page):
         global cfg
         # esta gui
         try: 
-            gui = requests.get(guiapplink)
+            headers = {"Range": "bytes=0-0"}
+            gui = requests.get(guiapplink, headers=headers)
             if gui.status_code == 200:
                 try:
                     tst = gui.headers['Last-Modified']
@@ -459,7 +464,8 @@ async def main(page: ft.Page):
                 appfile  = ""
 
                 # esta gui
-                gui = requests.get(guiapplink)
+                headers = {"Range": "bytes=0-0"}
+                gui = requests.get(guiapplink, headers=headers)
                 print(f"gui.headers: {gui.headers}")
                 if gui.status_code == 200:
                     # comparar e tratar aqui versões antes de salvar em cfg['atualizacao-gui']
@@ -896,7 +902,7 @@ async def main(page: ft.Page):
         dlgupgrade = ft.AlertDialog( 
             modal=True,
             title=ft.Text("Atualizações disponíveis !"),
-            content=ft.Text(f"{cfg['atualizacao-gui']} --> {cfg['versao-disponivel-gui']}\n\nA versão atualmente em uso foi atualizada em {cfg['atualizacao-gui']}.\n\nUma nova versão atualizada foi publicada em {cfg['versao-disponivel-gui']}.\n\nSerá necessário reiniciar o aplicativo após a atualização."),
+            content=ft.Text(f"{platform.system()} {__file__} --> {cfg['versao-disponivel-gui']}\n\nVersão atualmente em uso: {cfg['atualizacao-gui']}.\n\nNova versão atualizada: {cfg['versao-disponivel-gui']}.\n\nSerá necessário reiniciar o aplicativo após a atualização."),
             actions=[
                 ft.TextButton("Atualizar agora", on_click=upgrade),
                 ft.TextButton("Mais tarde", on_click=close_dlgupgrade),
