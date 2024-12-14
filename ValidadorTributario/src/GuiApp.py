@@ -131,7 +131,7 @@ def debug(msg):
         file.write(f"\n{msg}")  
 
 data0 = datetime.now()
-print(f"variáveis iniciais {data0.strftime("%d/%m/%Y %H:%M:%S")}")
+print(f'variáveis iniciais {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
 sshenv = ""
 if "SSH_CLIENT" in os.environ:
