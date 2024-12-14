@@ -69,8 +69,8 @@ from pprint import pprint
 
 
 
-guiapplink = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/src/GuiApp.py" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
-default_dockerfile = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/src/Dockerfile" # "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile"
+guiapplink = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/dist/GuiApp" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
+default_dockerfile = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/Dockerfile" # "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile"
 
 nomeapp = "Gui trivial para linha de comando"
 nomeappgui = nomeapp
