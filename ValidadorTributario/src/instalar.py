@@ -27,6 +27,7 @@ from datetime import datetime
 import hashlib
 import requests
 import pyperclip
+from pyshortcuts import make_shortcut
 
 ### Autor Gui
 ###
@@ -225,13 +226,16 @@ def main(page: ft.Page):
                 os.rename(arquivogui, f'{arquivogui}.backup{datetime.now().strftime("%Y%m%d%H%M%S")}')               
             os.rename(f"{arquivogui}.part", arquivogui)
             if platform.system() == "Linux":
-                os.chmod(arquivogui, stat.S_IXUSR)
+                os.chmod(arquivogui, stat.S_IXUSR | stat.S_IREAD)
 
             if os.path.exists(arquivocmd):
                 os.rename(arquivocmd, f'{arquivocmd}.backup{datetime.now().strftime("%Y%m%d%H%M%S")}')               
             os.rename(f"{arquivocmd}.part", arquivocmd)
             if platform.system() == "Linux":
-                os.chmod(arquivocmd, stat.S_IXUSR)
+                os.chmod(arquivocmd, stat.S_IXUSR | stat.S_IREAD)
+
+
+            make_shortcut('/home/user/bin/myapp.py', name='Validador Tributário', description="Validador Tributário", icon=None)
 
             page.clean()
             page.add(

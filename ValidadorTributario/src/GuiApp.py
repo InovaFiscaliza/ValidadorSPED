@@ -69,10 +69,19 @@ from pprint import pprint
 ### "\nData da consulta na SRF: " + str(datetime.today()) + ""
 
 
+    
+arquivogui = "GuiApp"
+arquivoguipy = f"{arquivogui}.py"
+if platform.system() == "Windows":
+   arquivogui += ".exe"  
+arquivocmd = "ValidadorTributario"
+if platform.system() == "Windows":
+   arquivocmd += ".exe" 
 
-guiapplink = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/dist/GuiApp" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
-if platform.system() == "windows":
-   guiapplink += ".exe"  
+guiapplink = f"https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/dist/{arquivogui}" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
+ 
+cmdapplink = f"https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/dist/{arquivocmd}" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
+ 
 
 default_dockerfile = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/Dockerfile" # "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile"
 
@@ -84,7 +93,7 @@ cmdline = "ping"
 descapp = "Gui trivial para linha de comando"
 
 
-appver = "Versão beta Gui 202412121850 " 
+appver = "Versão beta Gui 202412151700 " 
 
 arquivosenha = "corrigir_este_codigo.txt"
 
@@ -156,7 +165,30 @@ def fmtnome(name):
     return ret
 
         # https://www.digitaldesignjournal.com/subprocess-communicate/
-def cmd_interface(cmd,comm): #  Popen(["python", cmdline, pastaRaiz , cnpj_ , ano_ ]) #  
+def cmd_interface(cmd_,comm): #   
+
+    cwd = os.getcwd()
+    print(f"os.getcwd() :  {cwd} __file__[0:len(cwd)] : {__file__[0:len(cwd)]}")
+
+    #cmd = cmd_
+    if cwd != __file__[0:len(cwd)]: # se não for o python nativo do SO
+
+        cmd = []
+        n = -1
+        for item in cmd_:
+            n = n + 1
+            if n == 0:
+                pass
+            elif n == 1:
+                if platform.system() == "Linux":
+                    cmd.append(f"{cwd}/{item[:-3]}")
+                else:    
+                    cmd.append(f"{cwd}/{item[:-3]}.exe")
+            else:
+                cmd.append(item)
+        
+    else:
+        cmd = cmd_
 
     print(f"cmd_interface cmd: {cmd}")
     ret = {}
@@ -421,22 +453,68 @@ async def main(page: ft.Page):
     def atualizacoes():
 
         global cfg
-        # esta gui
-        try: 
-            headers = {"Range": "bytes=0-0"}
-            gui = requests.get(guiapplink, headers=headers)
-            if gui.status_code == 200:
-                try:
-                    tst = gui.headers['Last-Modified']
-                except:
-                    tst = gui.headers['ETag']
-                # comparar e tratar aqui versões antes de salvar em cfg['atualizacao-gui']
-                if cfg['atualizacao-gui'] != tst:
-                    cfg['versao-disponivel-gui'] = tst
-                    print(f"*** cfg['versao-disponivel-gui']: {cfg['versao-disponivel-gui']}")
-        except:
-            pass
 
+        tst = ""
+        part = -1
+        while True:
+
+            part = part + 1
+            s = str(part)
+
+            print(f"{guiapplink}-{s.zfill(2)}")
+
+            headers = {"Range": "bytes=0-0"}
+            response = requests.get(f"{guiapplink}-{s.zfill(2)}", headers=headers, stream=True)
+            response.raw.decode_content = True
+
+            totalbits = 0
+            if response.status_code == 206:
+                try:
+                    tst += response.headers['Last-Modified']
+                except:
+                    tst += response.headers['ETag']
+
+            elif ( response.status_code == 404 ) & ( part > 0 ):
+                
+                cfg['versao-disponivel-gui'] = tst
+                print(f"*** cfg['versao-disponivel-gui']: {cfg['versao-disponivel-gui']} -- cfg['versao-em-uso-gui']: {cfg['versao-em-uso-gui']}")
+                break
+
+            else:
+                print(f"gui part: {part} (Erro {response.status_code}): tente novamente mais tarde")
+                break
+
+##########
+        tst = ""
+        part = -1
+        while True:
+
+            part = part + 1
+            s = str(part)
+
+            print(f"{cmdapplink}-{s.zfill(2)}")
+            
+            headers = {"Range": "bytes=0-0"}
+            response = requests.get(f"{cmdapplink}-{s.zfill(2)}", headers=headers, stream=True)
+            response.raw.decode_content = True
+
+            totalbits = 0
+            if response.status_code == 206:
+                try:
+                    tst += response.headers['Last-Modified']
+                except:
+                    tst += response.headers['ETag']
+
+            elif ( response.status_code == 404 ) & ( part > 0 ):
+                
+                cfg['versao-disponivel-app'] = tst
+                print(f"*** cfg['versao-disponivel-app']: {cfg['versao-disponivel-app']} -- cfg['versao-em-uso-app']: {cfg['versao-em-uso-app']}")
+                break
+
+            else:
+                print(f"cmd part: {part} (Erro {response.status_code}): tente novamente mais tarde")
+                break
+##########
 
     async def config():
 
@@ -459,23 +537,23 @@ async def main(page: ft.Page):
                 cfg = {}
                 cfg['versao-disponivel-gui'] = ""
                 cfg['versao-disponivel-app'] = ""
+                cfg['versao-em-uso-gui'] = ""
+                cfg['versao-em-uso-app'] = ""
+                atualizacoes()
                 dockerfile = ""
                 requirements = ""
                 appfile  = ""
 
                 # esta gui
-                headers = {"Range": "bytes=0-0"}
-                gui = requests.get(guiapplink, headers=headers)
-                print(f"gui.headers: {gui.headers}")
-                if gui.status_code == 200:
-                    # comparar e tratar aqui versões antes de salvar em cfg['atualizacao-gui']
-                    try:
-                        cfg['atualizacao-gui'] = gui.headers['Last-Modified']
-                    except:
-                        cfg['atualizacao-gui'] = gui.headers['ETag']# ETag
+                cfg['versao-em-uso-gui'] = cfg['versao-disponivel-gui']
+                cfg['versao-em-uso-app'] = cfg['versao-disponivel-app']
+
 
                 pathdockerfile = default_dockerfile
                 path = pathdockerfile[:(pathdockerfile.rfind('/') + 1)] 
+                # esta gui
+                gui = requests.get(f"{path}src/{arquivoguipy}")
+
                 dock = requests.get(pathdockerfile)
                 headers = dock.headers
                 # print(f"get dockerfile:\n{dock.headers['Last-Modified']}")
@@ -492,7 +570,7 @@ async def main(page: ft.Page):
                         if partes:
                             descapp0 = partes.group(1)
                         
-                        partes = re.search('CMD . .python., ../(.*). .', line ) # f'CMD [ "python", "./(.*)" ]'
+                        partes = re.search('CMD . .python., ../(.*). .', line ) # 
                         if partes:
                             cmdline0 = partes.group(1)
 
@@ -502,7 +580,7 @@ async def main(page: ft.Page):
                         requirements = req.text
 
                 if requirements != "":
-                    req = requests.get(f"{path}{cmdline0}")
+                    req = requests.get(f"{path}src/{cmdline0}")
                     if req.status_code == 200:
                         appfile = req.text
 
@@ -628,10 +706,6 @@ async def main(page: ft.Page):
                     cfg['descricao-app'] = descapp0
                     cfg['cmd-app'] = cmdline0
                     cfg['url-app'] = pathdockerfile
-                    try:
-                        cfg['atualizacao-app'] = req.headers['Last-Modified'] ## comparar e tratar aqui versões antes de salvar em cfg['atualizacao-app']
-                    except:
-                        cfg['atualizacao-app'] = req.headers['ETag']
                     cfg['versao-app'] = appver0 
                     cfg['descricao-cmd-app'] = descricao2
                     cfg['args-app'] = largs2
@@ -654,19 +728,19 @@ async def main(page: ft.Page):
 
 
                 await salva_offline('cfg.json', json.dumps(cfg)) # 
-                await salva_offline(f"GuiApp.py_{fmtnome(cfg['atualizacao-gui'])}.bak", gui.text)
-                await salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['atualizacao-app'])}.bak", dockerfile)
-                await salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['atualizacao-app'])}.bak", requirements)
-                await salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['atualizacao-app'])}.bak", appfile)
+                await salva_offline(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
+                await salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
+                await salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
+                await salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
 
                 # debug e backup
 
 
                 salva_debug_backup('cfg.json', json.dumps(cfg)) # 
-                salva_debug_backup(f"GuiApp.py_{fmtnome(cfg['atualizacao-gui'])}.bak", gui.text)
-                salva_debug_backup(f"{cfg['id']}/dockerfile_{fmtnome(cfg['atualizacao-app'])}.bak", dockerfile)
-                salva_debug_backup(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['atualizacao-app'])}.bak", requirements)
-                salva_debug_backup(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['atualizacao-app'])}.bak", appfile)
+                salva_debug_backup(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
+                salva_debug_backup(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
+                salva_debug_backup(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
+                salva_debug_backup(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
 
                 # http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile
                 # http://testando:13000/testes/ValidadorTributario/raw/master/requirements.txt
@@ -877,19 +951,19 @@ async def main(page: ft.Page):
 
             pathori = f"{RepositorioAppLocal}/{sha256.hexdigest()}"
 
-            print(f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['atualizacao-gui'])}_{fmtnome(str(datetime.now()))}.bak")
+            print(f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak")
             print(Path(__file__).parent.resolve())
 
-            shutil.copy(f"{Path(__file__).parent.resolve()}/{os.path.basename(__file__)}", f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['atualizacao-gui'])}_{fmtnome(str(datetime.now()))}.bak") 
+            shutil.copy(f"{Path(__file__).parent.resolve()}/{os.path.basename(__file__)}", f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak") 
 
-            shutil.copy( f"{Path(__file__).parent.resolve()}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['atualizacao-app'])}_{fmtnome(str(datetime.now()))}.bak" )
+            shutil.copy( f"{Path(__file__).parent.resolve()}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
 
-            # salva_offline(f"GuiApp.py_{fmtnome(cfg['atualizacao-gui'])}.bak", gui.text)
-            # salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['atualizacao-app'])}.bak", dockerfile)
-            # salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['atualizacao-app'])}.bak", requirements)
-            # salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['atualizacao-app'])}.bak", appfile)
+            # salva_offline(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
+            # salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
+            # salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
+            # salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
 
-            #shutil.copy( f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['atualizacao-app'])}_{fmtnome(str(datetime.now()))}.bak" )
+            #shutil.copy( f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
 
             page.window_close()
             page.window_destroy()
@@ -899,10 +973,22 @@ async def main(page: ft.Page):
             dlgupgrade.open = False
             page.update()
 
+        #(cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']) | (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app'])
+        def novasversoes():
+
+            txt = ""
+            if (cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']):
+                txt += f"Existe uma nova versão da GUI disponível"
+
+            if (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app']):  
+                txt += f"Existe uma nova versão do App disponível"  
+
+            return txt
+
         dlgupgrade = ft.AlertDialog( 
             modal=True,
             title=ft.Text("Atualizações disponíveis !"),
-            content=ft.Text(f"{platform.system()} {__file__} --> {cfg['versao-disponivel-gui']}\n\nVersão atualmente em uso: {cfg['atualizacao-gui']}.\n\nNova versão atualizada: {cfg['versao-disponivel-gui']}.\n\nSerá necessário reiniciar o aplicativo após a atualização."),
+            content=ft.Text(f"{novasversoes()}"),
             actions=[
                 ft.TextButton("Atualizar agora", on_click=upgrade),
                 ft.TextButton("Mais tarde", on_click=close_dlgupgrade),
@@ -960,7 +1046,7 @@ async def main(page: ft.Page):
         ret = ""
 
         upgrade0 = ft.Text()
-        if cfg['versao-disponivel-gui'] != "":
+        if (cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']) | (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app']) :
             upgrade0 = ft.IconButton(ft.icons.UPGRADE,icon_color="white", on_click=open_dlgupgrade)
 
         if re.search(r"elatório", title) :
@@ -1646,7 +1732,10 @@ async def main(page: ft.Page):
     global nomeapp, appver , resultadosexistentes #, cnpj_, ano_, prest_
 
 
+    
 
+
+    
     
 
 

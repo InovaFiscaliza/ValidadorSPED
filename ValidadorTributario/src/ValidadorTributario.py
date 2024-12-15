@@ -4813,7 +4813,7 @@ def copia_arquivos():
         ### fim down  
     else:#except:
         debug("Algum arquivo temporário foi apagado por outro aplicativo ou algum erro.")
-        exit()
+        sys.exit()
 
     remove_json(f"dataframe-tabela-expandida_{pathprestok}")
     expandida = pd.DataFrame()
@@ -4827,14 +4827,14 @@ def descompacta_e_verifica():
         pass
     else:
         debug("Ano inválido")  
-        exit()  
+        sys.exit()  
 
     c = ""
     if pycpfcnpj.cnpj.validate(re.sub(r"[^0-9]", "", cnpj_)):
         c = re.sub(r"[^0-9]", "", cnpj_) # # pycpfcnpj.cpfcnpj.clear_punctuation(cnpj_ft.value)
     else:
         debug("CNPJ inválido")
-        exit()
+        sys.exit()
 
     cnpj_ = c[0:2] + "." + c[2:5] + "." + c[5:8] + "/" + c[8:12] + "-" + c[12:14]
 
@@ -4896,7 +4896,7 @@ debug(os.environ)
 if __name__ == "__main__":
 
     log(f"Arguments: {sys.argv}" )
-    args = docopt(__doc__, version="202412121850")
+    args = docopt(__doc__, version="202412151700")
 
 
 
@@ -4948,23 +4948,23 @@ if __name__ == "__main__":
 
     if args['--query']:
         print(f"implementando --query")
-        exit()
+        sys.exit()
 
     elif args['--dir']:
         print(lista_pasta(args['PATH-INI']))
-        exit()
+        sys.exit()
 
     elif args['--file']:
         print(get_file(args['ARQUIVO']))
-        exit()
+        sys.exit()
 
     elif args['--relatorios']:
         print(lista_relatorios())
-        exit()
+        sys.exit()
 
     elif args['--log']:
         print(tail_log(args['UUID']))
-        exit()
+        sys.exit()
 
     else:
         pass   
@@ -4983,7 +4983,7 @@ if __name__ == "__main__":
 
     # print("\n\ndebug:\n")
     # print(args)
-    # #exit()
+    # #sys.exit()
 
     prest_ = "" # sys.argv[5]
 
