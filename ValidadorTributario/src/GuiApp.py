@@ -445,7 +445,7 @@ async def main(page: ft.Page):
 
         data0 = datetime.now()
         print(f"*** inicio config {data0}")
-        print(f"*** inicio config {data0.strftime("%d/%m/%Y %H:%M:%S")}")
+        print(f'*** inicio config {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
         if not await existe('cfg.json'):
 
@@ -454,7 +454,7 @@ async def main(page: ft.Page):
                 lista_offline(f'__config__(.*)__$')
 
                 data0 = datetime.now()
-                print(f"*** leu lista_offline {data0.strftime("%d/%m/%Y %H:%M:%S")}")
+                print(f'*** leu lista_offline {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
                 cfg = {}
                 cfg['versao-disponivel-gui'] = ""
@@ -507,7 +507,7 @@ async def main(page: ft.Page):
                         appfile = req.text
 
                 data0 = datetime.now()
-                print(f"*** baixou atualização {data0.strftime("%d/%m/%Y %H:%M:%S")}")
+                print(f'*** baixou atualização {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
                 if appfile != "":
 
@@ -641,12 +641,12 @@ async def main(page: ft.Page):
                     print(f"largs0: \n{largs0}\n")
 
                     data0 = datetime.now()
-                    print(f"*** fim config geral {data0.strftime("%d/%m/%Y %H:%M:%S")}")
+                    print(f'*** fim config geral {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
 
 
                 data0 = datetime.now()
-                print(f"*** fim config {data0.strftime("%d/%m/%Y %H:%M:%S")}")
+                print(f'*** fim config {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
                 print(f"cfg: \n{str(json.dumps(cfg))}\n")
 
@@ -690,7 +690,7 @@ async def main(page: ft.Page):
 
 
         data0 = datetime.now()
-        print(f"*** fim config {data0.strftime("%d/%m/%Y %H:%M:%S")}")
+        print(f'*** fim config {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
 
     def button_clicked(e):
@@ -850,7 +850,7 @@ async def main(page: ft.Page):
 
 
     def mailto_dlg(e):
-        webbrowser.open(f'{link}{base64.b64decode(test+'==').decode('utf-8')}{nomeapp}&body=%0A%0A%0A%0A%0A%0A%0A%0A%0A%0AVers%C3%A3o%20e%20ambiente em uso:%0A%0A{nomeapp} {appver} %0A{sys.version}%0A{os.environ}%0A')
+        webbrowser.open(f'{link}{base64.b64decode(test+"==").decode("utf-8")}{nomeapp}&body=%0A%0A%0A%0A%0A%0A%0A%0A%0A%0AVers%C3%A3o%20e%20ambiente em uso:%0A%0A{nomeapp} {appver} %0A{sys.version}%0A{os.environ}%0A')
         dlg.open = False
         page.update()
 
@@ -1464,7 +1464,7 @@ async def main(page: ft.Page):
         print(f"*** cfg: \n {cfg}")
 
         data0 = datetime.now()
-        print(f"*** iniciando renderização da página inicial {data0.strftime("%d/%m/%Y %H:%M:%S")}")
+        print(f'*** iniciando renderização da página inicial {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
         page.clean()
         page.scroll = "auto"

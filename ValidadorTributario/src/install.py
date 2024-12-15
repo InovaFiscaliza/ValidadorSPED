@@ -49,13 +49,24 @@ import pyperclip
 ### É necessário instalar o Flutter para gerar aplicativo instalável e publicar na Microsoft Store.
 ### https://flet.dev/ ; https://flutter.dev/ 
 
+####################################################################
+# pip install PyInstaller
+# flet pack GuiApp.py
+# flet pack ValidadorTributario.py
+# split -d  -b 64m GuiApp.exe GuiApp.exe-
+# split -d  -b 64m ValidadorTributario.exe ValidadorTributario.exe-
+# flet pack instalar.py
+# mv instalar.exe GuiApp.exe
+####################################################################
 
-###
-### Provisoriamente para testes iniciais a gui fica no memso arquivo
-### "\nData da consulta na SRF: " + str(datetime.today()) + ""
 
 
 
+
+atualizador = "atualizar"
+if platform.system() == "windows":
+   atualizador += ".exe"    
+arquivo = "GuiApp"
 guiapplink = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/dist/GuiApp" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
 if platform.system() == "windows":
    guiapplink += ".exe"  
@@ -66,10 +77,7 @@ nomeappgui = nomeapp
 
 
 
-
-
-async def main(page: ft.Page):
-
+def main(page: ft.Page):
 
     pbmsg = ft.Text(value="")
     pb = ft.ProgressBar(width=400)
@@ -83,48 +91,90 @@ async def main(page: ft.Page):
                 [ft.ProgressRing()],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 ),
+            ft.Column([ pbmsg, pb]),
         )
-        pb.value = 0.001
+        pb.value = 0.01
         page.update()
 
-    async def instalaGuiApp():
+    def instalaGuiApp():
+
+
+        
+        progresso()
+
+        if os.path.exists(f"{arquivo}.part"):
+            os.remove(f"{arquivo}.part")
 
         part = -1
         while True:
 
             part = part + 1
+            s = str(part)
 
-            response = requests.get(f"{guiapplink}-{part.zfill(2)}")
+            print(f"{guiapplink}-{s.zfill(2)}")
 
-            local_filename = GuiApp.part
+
+
+
+            response = requests.get(f"{guiapplink}-{s.zfill(2)}", stream=True)
+            response.raw.decode_content = True
+
             totalbits = 0
             if response.status_code == 200:
-                with open(local_filename, 'ab') as f:
-                    for chunk in response.iter_content(chunk_size=1024):
+                with open(f"{arquivo}.part", 'ab') as f:
+                    for chunk in response.iter_content(chunk_size=65536):
                         if chunk:
-                            totalbits += 1024
-
-                            pb.value = int(r1[0]) / 100
-                            pbmsg.value = f"Parte{part.zfill(2)}: Baixou {totalbits*1024}KB..."
+                            totalbits += 65536
+                            #print(f"Parte {s.zfill(2)}:  {int(totalbits / 680000)} % ...")
+                            pb.value = int(totalbits / 680000) / 100
+                            pbmsg.value = f"Acessando Repositórios e instalando versão atual:\n\nEtapa {part + 1} -> {int(totalbits / 680000)} % concluida ..."
                             page.update()
 
                             f.write(chunk)
 
+            elif ( response.status_code == 404 ) & ( part > 0 ):
+                
+                # salva se é o instalador
+                if os.path.exists(arquivo) :
+                    if os.path.getsize(arquivo) < 100000000  :
+                        os.rename(arquivo, atualizador)
+                
+
+                if os.path.exists(arquivo):
+                    os.rename(arquivo, f'arquivo.backup{datetime.now().strftime("Y%m%d%H%M%S")}')               
+                os.rename(f"{arquivo}.part", arquivo)
+
+
+
+
+                page.clean()
+                page.add(
+                    ft.Text("Instalação Concluida:\n\nNecessário reiniciar o aplicativo."),
+                )
+                page.update()
+
             else:
-                print(f"Erro ao baixar")
+                print(f"part: {part}")
+                page.clean()
+                page.add(
+                    ft.Text(f"Erro de conexão ou arquivo inexistente (Erro {response.status_code}): tente novamente mais tarde"),
+                )
+                page.update()
+                break
 
      
  
 
     page.title = "Acessando Repositórios e instalando versão atual ..."
 
-    progresso()
-
-    pbmsg.value = f"Acessando Repositórios e instalando versão atual ..."
+    page.clean()
+    page.add(
+        ft.Text("Acessando Repositórios e instalando versão atual ..."),
+    )
     page.update()
 
-    await instalaGuiApp()
 
+    instalaGuiApp()
 
 
 if "SSH_CLIENT" in os.environ:
