@@ -53,8 +53,8 @@ from pyshortcuts import make_shortcut
 
 ####################################################################
 # pip install PyInstaller
-# flet pack GuiApp.py
-# flet pack ValidadorTributario.py
+# flet pack GuiApp.py --icon ValidadorTributario.ico
+# flet pack ValidadorTributario.py --icon ValidadorTributario.ico
 # sha256sum GuiApp
 # sha256sum ValidadorTributario
 # split -d  -b 64m GuiApp GuiApp-
@@ -63,7 +63,7 @@ from pyshortcuts import make_shortcut
 # mv instalar GuiApp
 # split -d  -b 64m GuiApp.exe GuiApp.exe-
 # split -d  -b 64m ValidadorTributario.exe ValidadorTributario.exe-
-# flet pack instalar.py
+# flet pack instalar.py --icon ValidadorTributario.ico
 # mv instalar.exe GuiApp.exe
 ####################################################################
 
@@ -238,7 +238,7 @@ def main(page: ft.Page):
             make_shortcut(f"{os.getcwd()}{arquivogui}", name='Validador Tributário', description="Validador Tributário", icon=None)
             cfg['versao-em-uso-gui'] = cfg['versao-disponivel-gui']
             cfg['versao-em-uso-app'] = cfg['versao-disponivel-app']
-            
+
             page.clean()
             page.add(
                 ft.Text("Instalação Concluida:\n\nNecessário reiniciar o aplicativo."),
