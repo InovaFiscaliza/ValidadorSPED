@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import flet as ft
-from flet import AppBar, ElevatedButton, Page, Text, View, colors,  Column, Container, Row
+from flet import Page, Text, View, Column
 import platform
 import sys
 import stat
