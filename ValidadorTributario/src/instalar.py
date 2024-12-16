@@ -236,7 +236,9 @@ def main(page: ft.Page):
 
 
             make_shortcut(f"{os.getcwd()}{arquivogui}", name='Validador Tributário', description="Validador Tributário", icon=None)
-
+            cfg['versao-em-uso-gui'] = cfg['versao-disponivel-gui']
+            cfg['versao-em-uso-app'] = cfg['versao-disponivel-app']
+            
             page.clean()
             page.add(
                 ft.Text("Instalação Concluida:\n\nNecessário reiniciar o aplicativo."),

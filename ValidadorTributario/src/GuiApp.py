@@ -11,6 +11,7 @@ import webbrowser
 from subprocess import check_output, Popen
 import platform
 import sys
+import stat
 import os
 import io
 from io import StringIO
@@ -285,111 +286,6 @@ def lista_offlinexxx(filtro):
     
     print(f"lista_offline: \n{res}")
     return res      
-
-
-
-
-
-# def recuperavpath(path):
-
-#     global pastaRaiz, pasta_in, vpath
-
-
-#     while path.find(pasta_in) != -1: # se ainda não chegou na pasta de origem
-#         n1 = path[2+len(pasta_in):].find("/")
-#         n = 2+len(pasta_in) + n1
-#         path1 = path[:n]
-#         path2 = path[n:]
-#         debug(f"recuperavpath: >{path1}< >{path2}<")        
-#         #tmp = os.path.dirname(path)
-#         ori = vpath[vpath['destino'] == path1]
-#         ori['origem'].iloc[0]
-#         debug(ori)
-#         debug(ori['origem'].iloc[0])
-#         path = ori['origem'].iloc[0] + path2
-
-#     debug(f"recuperavpath: >{path}<")
-#     path = unquote(path)
-#     return path
-
-
-# def mostraraiz():
-#     global pastaRaiz
-#     try:
-#         raiz = str(Path(pastaRaiz).as_uri())
-#     except:
-#         raiz = "file:///"    
-#     return raiz
-    
-
-# def respostaokxxx(res0):
-
-#     # ajuste de parêmetros para contagens e cores
-#     res = res0.split('(', 1)[0] # desconsiderar comentários do proprio script
-#     if re.search(r"não", res): ## resposta negativa
-#         debug("-a")
-#         n1 = 0
-#         n2 = 1 
-#     elif re.search(r"[a-zA-Z]", res) and not (re.search(r"não.*[^(]", res) or re.search(r"falha", res)): ## com resposta porém sem não da receita ou falha
-#         debug("-b")
-#         n1 = 1
-#         n2 = 0
-#     # elif re.search(r"falha", res): # sem resposta
-#     #     debug("-c")
-#     #     n1 = 0
-#     #     n2 = 0
-#     else:
-#         debug("-c")
-#         n1 = 0
-#         n2 = 0
-
-#     debug(f"respostaok(res) >{res}< {n1} {n1}")
-#     return n1, n2   
-
-
-# def meses_inclusos(ano , dataini, datafim, msg,m2): # !!!
-
-#     global meses
-
-#     debug(str(dataini))
-#     debug(str(datafim))
-#     debug(f"ano {ano}")
-
-
-
-
-#     res = []
-#     r2 = []
-#     for mes in range(1, 13):
-#         smes = str(mes)
-#         if(mes < 10):
-#             smes = "0" + str(mes)
-
-#         if ano == 0:
-#             res.append(0)
-#             r2.append(0)
-#             debug('meses inclusos ____')
-#         else:    
-
-#             try:
-#                 n = calendar.monthrange(int(ano), int(smes))[1]
-#                 ini = datetime.strptime(str(ano)+smes+"01",r'%Y%m%d')
-#                 fim = datetime.strptime(str(ano)+smes+str(n),r'%Y%m%d')
-
-#                 if datetime.strptime(dataini,r'%Y-%m-%d') <= fim and datetime.strptime(datafim,r'%Y-%m-%d') >= ini: # r'%Y-%m-%d %H:%M:%S'
-#                     res.append(msg) ## res.append(meses[mes-1])
-#                     r2.append(m2)
-#                 else:
-#                     res.append(0)
-#                     r2.append(0)
-
-#             except:
-#                 res.append(0)
-#                 r2.append(0)
-#                 debug('meses inclusos ____')
-
-#     debug(f"meses_inclusos {ano} {dataini} {datafim} {msg} {m2} ==> {res} {r2}")
-#     return res, r2
 
 
 
@@ -938,69 +834,93 @@ async def main(page: ft.Page):
         page.update()
 
 
-    def open_dlgupgrade(e):
+
+    # def open_dlgupgrade(e):
 
 
-        def upgrade(e):
 
-            global cfg
+    #     def continue_dlgupgrade(e):
+    #         dlgupgrade.open = False
+    #         instalaGuiApp()
+    #         page.update()
 
-            instalaGuiApp()
+    #     #(cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']) | (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app'])
+    #     def novasversoes():
 
-            # # voltar p/ shared preferences
-            # sha256 = hashlib.sha256()
-            # sha256.update(nomeappgui.encode('utf-8'))
+    #         txt = ""
+    #         if (cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']):
+    #             txt += f"\nExiste uma nova versão da GUI disponível\n"
 
-            # pathori = f"{RepositorioAppLocal}/{sha256.hexdigest()}"
+    #         if (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app']):  
+    #             txt += f"\nExiste uma nova versão do App disponível\n"  
 
-            # print(f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak")
-            # print(Path(__file__).parent.resolve())
+    #         return txt
 
-            # shutil.copy(f"{Path(__file__).parent.resolve()}/{os.path.basename(__file__)}", f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak") 
+    #     dlgupgrade = ft.AlertDialog( 
+    #         modal=True,
+    #         title=ft.Text("Atualizações disponíveis !"),
+    #         content=ft.Text(f"{novasversoes()}"),
+    #         actions=[
+    #             ft.TextButton("Atualizar agora", on_click=continue_dlgupgrade),
+    #             ft.TextButton("Mais tarde", on_click=pg_ini),
+    #         ],
+    #         actions_alignment=ft.MainAxisAlignment.END,
+    #         on_dismiss=lambda e: debug("Modal dialog dismissed!"),) 
+        
+    #     page.dialog = dlgupgrade
+    #     dlgupgrade.open = True
+    #     page.update()
 
-            # shutil.copy( f"{Path(__file__).parent.resolve()}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
 
-            # # salva_offline(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
-            # # salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
-            # # salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
-            # # salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
+    def upgrade(e):
 
-            # #shutil.copy( f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
-
-            page.window_close()
-            page.window_destroy()
-
-
-        def close_dlgupgrade(e):
-            dlgupgrade.open = False
-            page.update()
-
-        #(cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']) | (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app'])
         def novasversoes():
 
             txt = ""
             if (cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']):
-                txt += f"Existe uma nova versão da GUI disponível"
+                txt += f"\nExiste uma nova versão da GUI disponível\n"
 
             if (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app']):  
-                txt += f"Existe uma nova versão do App disponível"  
+                txt += f"\nExiste uma nova versão do App disponível\n"  
 
             return txt
 
-        dlgupgrade = ft.AlertDialog( 
-            modal=True,
-            title=ft.Text("Atualizações disponíveis !"),
-            content=ft.Text(f"{novasversoes()}"),
-            actions=[
-                ft.TextButton("Atualizar agora", on_click=upgrade),
-                ft.TextButton("Mais tarde", on_click=close_dlgupgrade),
-            ],
-            actions_alignment=ft.MainAxisAlignment.END,
-            on_dismiss=lambda e: debug("Modal dialog dismissed!"),) 
-        
-        page.dialog = dlgupgrade
-        dlgupgrade.open = True
+        page.clean()
+        page.add(
+            BarraSuperior("/ Atualização "),
+            ft.Text(f"{novasversoes()}"),
+            ft.ElevatedButton("Iniciar atualização", icon=ft.icons.UPGRADE, on_click=instalaGuiApp),
+            BarraInferior(),
+        )
         page.update()
+
+        
+
+        
+
+        # # voltar p/ shared preferences
+        # sha256 = hashlib.sha256()
+        # sha256.update(nomeappgui.encode('utf-8'))
+
+        # pathori = f"{RepositorioAppLocal}/{sha256.hexdigest()}"
+
+        # print(f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak")
+        # print(Path(__file__).parent.resolve())
+
+        # shutil.copy(f"{Path(__file__).parent.resolve()}/{os.path.basename(__file__)}", f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak") 
+
+        # shutil.copy( f"{Path(__file__).parent.resolve()}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
+
+        # # salva_offline(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
+        # # salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
+        # # salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
+        # # salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
+
+        # #shutil.copy( f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
+
+        # page.window_close()
+        # page.window_destroy()
+
 
     dlg = ft.AlertDialog( 
         modal=True,
@@ -1049,7 +969,7 @@ async def main(page: ft.Page):
 
         upgrade0 = ft.Text()
         if (cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']) | (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app']) :
-            upgrade0 = ft.IconButton(ft.icons.UPGRADE,icon_color="white", on_click=open_dlgupgrade)
+            upgrade0 = ft.IconButton(ft.icons.UPGRADE,icon_color="white", on_click=upgrade)
 
         if re.search(r"elatório", title) :
             bars =    AppBar(
@@ -1133,7 +1053,7 @@ async def main(page: ft.Page):
 
 
 
-    def instalaGuiApp():
+    def instalaGuiApp(e):
 
 
         
@@ -1261,6 +1181,9 @@ async def main(page: ft.Page):
 
 
             make_shortcut(f"{os.getcwd()}{arquivogui}", name='Validador Tributário', description="Validador Tributário", icon=None)
+            cfg['versao-em-uso-gui'] = cfg['versao-disponivel-gui']
+            cfg['versao-em-uso-app'] = cfg['versao-disponivel-app']
+
 
             page.clean()
             page.add(
