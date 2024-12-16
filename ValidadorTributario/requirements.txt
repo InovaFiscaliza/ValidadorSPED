@@ -54,7 +54,6 @@ filelock==3.16.1
 flet==0.22.1
 flet-core==0.22.1
 flet-runtime==0.22.1
-fletify @ git+https://github.com/Benitmulindwa/FletifyHTML.git@afc835218a820ad4b522d95ef6c6af542267b9e7
 fros==1.1
 geographiclib==2.0
 geopandas==1.0.1
