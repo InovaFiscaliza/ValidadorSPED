@@ -420,7 +420,7 @@ async def main(page: ft.Page):
         print(f"*** inicio config {data0}")
         print(f'*** inicio config {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
-        if not await existe('cfg.json'):
+        if True: #if not await existe('cfg.json'):
 
             try:
 
@@ -643,7 +643,11 @@ async def main(page: ft.Page):
             except:
                 print(f"Erro de conexão ao baixar configurações iniciais do App")
                 if not await existe('cfg.json'):
-                    exit()
+                    page.clean()
+                    page.add(
+                        ft.Text(f"Erro de conexão ao baixar configurações iniciais do App"),
+                    )
+                    page.update()
 
         print(f"le_offline('cfg.json'): >{await le_offline('cfg.json')}<")
 
