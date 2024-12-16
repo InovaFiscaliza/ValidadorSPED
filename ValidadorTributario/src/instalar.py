@@ -254,9 +254,13 @@ def main(page: ft.Page):
     instalaGuiApp()
 
 
-if "SSH_CLIENT" in os.environ:
-    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=8080) # redireciona interface para http://127.0.0.1:8080/
-else:
-    ft.app(target=main) # GUI nativa do SO onde está executando
+
+
+    if "SSH_CLIENT" in os.environ:
+        ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=8080) # redireciona interface para http://127.0.0.1:8080/
+    else:
+        ft.app(target=main) # GUI nativa do SO onde está executando
+
+
 
 
