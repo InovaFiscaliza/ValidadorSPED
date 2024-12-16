@@ -2,31 +2,18 @@
 # -*- coding: utf-8 -*-
 import flet as ft
 from flet import AppBar, ElevatedButton, Page, Text, View, colors,  Column, Container, Row
-from markdownify import markdownify as md
-import uuid 
-import base64
-import subprocess
-import webbrowser
-from subprocess import check_output, Popen
 import platform
 import sys
 import stat
 import os
 import io
-from io import StringIO
 import time
-import shutil
-from urllib.parse import urlparse, unquote, urlencode
-import mimetypes
 from pathlib import Path
 from time import sleep
 import re
 import json
-import paramiko
 from datetime import datetime
-import hashlib
 import requests
-import pyperclip
 from pyshortcuts import make_shortcut
 
 ### Autor Gui
