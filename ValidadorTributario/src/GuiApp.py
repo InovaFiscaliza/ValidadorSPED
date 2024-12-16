@@ -3,7 +3,6 @@
 import flet as ft
 from flet import AppBar, ElevatedButton, Page, Text, View, colors,  Column, Container, Row
 from markdownify import markdownify as md
-from fletify import FletifyHTML
 import uuid 
 import base64
 import subprocess
