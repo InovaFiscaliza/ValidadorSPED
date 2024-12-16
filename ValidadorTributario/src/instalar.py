@@ -235,7 +235,7 @@ def main(page: ft.Page):
                 os.chmod(arquivocmd, stat.S_IXUSR | stat.S_IREAD)
 
 
-            make_shortcut('/home/user/bin/myapp.py', name='Validador Tributário', description="Validador Tributário", icon=None)
+            make_shortcut(f"{os.getcwd()}{arquivogui}", name='Validador Tributário', description="Validador Tributário", icon=None)
 
             page.clean()
             page.add(

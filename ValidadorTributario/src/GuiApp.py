@@ -945,25 +945,27 @@ async def main(page: ft.Page):
 
             global cfg
 
-            # voltar p/ shared preferences
-            sha256 = hashlib.sha256()
-            sha256.update(nomeappgui.encode('utf-8'))
+            instalaGuiApp()
 
-            pathori = f"{RepositorioAppLocal}/{sha256.hexdigest()}"
+            # # voltar p/ shared preferences
+            # sha256 = hashlib.sha256()
+            # sha256.update(nomeappgui.encode('utf-8'))
 
-            print(f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak")
-            print(Path(__file__).parent.resolve())
+            # pathori = f"{RepositorioAppLocal}/{sha256.hexdigest()}"
 
-            shutil.copy(f"{Path(__file__).parent.resolve()}/{os.path.basename(__file__)}", f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak") 
+            # print(f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak")
+            # print(Path(__file__).parent.resolve())
 
-            shutil.copy( f"{Path(__file__).parent.resolve()}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
+            # shutil.copy(f"{Path(__file__).parent.resolve()}/{os.path.basename(__file__)}", f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak") 
 
-            # salva_offline(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
-            # salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
-            # salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
-            # salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
+            # shutil.copy( f"{Path(__file__).parent.resolve()}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
 
-            #shutil.copy( f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
+            # # salva_offline(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
+            # # salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
+            # # salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
+            # # salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
+
+            # #shutil.copy( f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
 
             page.window_close()
             page.window_destroy()
@@ -1130,32 +1132,163 @@ async def main(page: ft.Page):
         page.update()
 
 
+
+    def instalaGuiApp():
+
+
+        
+        progresso()
+
+        # gui
+        if os.path.exists(f"{arquivogui}.part"):
+            os.remove(f"{arquivogui}.part")
+
+        part = -1
+        while True:
+
+            part = part + 1
+            s = str(part)
+
+            print(f"{guiapplink}-{s.zfill(2)}")
+
+
+
+
+            response = requests.get(f"{guiapplink}-{s.zfill(2)}", stream=True)
+            response.raw.decode_content = True
+
+            totalbits = 0
+            if response.status_code == 200:
+                with open(f"{arquivogui}.part", 'ab') as f:
+                    for chunk in response.iter_content(chunk_size=65536):
+                        if chunk:
+                            totalbits += 65536
+                            #print(f"Parte {s.zfill(2)}:  {int(totalbits / 680000)} % ...")
+                            pb.value = int(totalbits / 680000) / 100
+                            pbmsg.value = f"Acessando Repositórios e instalando versão atual:\n\nGui etapa {part + 1} -> {int(totalbits / 680000)} % concluida ..."
+                            page.update()
+
+                            f.write(chunk)
+
+            elif ( response.status_code == 404 ) & ( part > 0 ):
+                
+                guiok = True
+                break
+
+
+
+            else:
+                print(f"part: {part}")
+                page.clean()
+                page.add(
+                    BarraSuperior("/ Erro "),
+                    ft.Text(f"Erro de conexão ou arquivogui inexistente (Erro {response.status_code}): tente novamente mais tarde"),
+                    BarraInferior(),
+                )
+                page.update()
+                break
+
+        # cmd
+        if os.path.exists(f"{arquivocmd}.part"):
+            os.remove(f"{arquivocmd}.part")
+
+        part = -1
+        while True:
+
+            part = part + 1
+            s = str(part)
+
+            print(f"{cmdapplink}-{s.zfill(2)}")
+
+
+
+
+            response = requests.get(f"{cmdapplink}-{s.zfill(2)}", stream=True)
+            response.raw.decode_content = True
+
+            totalbits = 0
+            if response.status_code == 200:
+                with open(f"{arquivocmd}.part", 'ab') as f:
+                    for chunk in response.iter_content(chunk_size=65536):
+                        if chunk:
+                            totalbits += 65536
+                            #print(f"Parte {s.zfill(2)}:  {int(totalbits / 680000)} % ...")
+                            pb.value = int(totalbits / 680000) / 100
+                            pbmsg.value = f"Acessando Repositórios e instalando versão atual:\n\nCmd etapa {part + 1} -> {int(totalbits / 680000)} % concluida ..."
+                            page.update()
+
+                            f.write(chunk)
+
+            elif ( response.status_code == 404 ) & ( part > 0 ):
+                
+                cmdok = True
+                break
+
+
+            else:
+                print(f"part: {part}")
+                page.clean()
+                page.add(
+                    BarraSuperior("/ Erro "),
+                    ft.Text(f"Erro de conexão ou arquivocmd inexistente (Erro {response.status_code}): tente novamente mais tarde"),
+                    BarraInferior(),
+                )
+                page.update()
+                break
+
+
+
+
+        if guiok & cmdok:
+            
+            # # salva se é o instalador inicial
+            # if os.path.exists(arquivogui) :
+            #     if os.path.getsize(arquivogui) < 100000000  :
+            #         os.rename(arquivogui, atualizador)
+            
+
+            if os.path.exists(arquivogui):
+                os.rename(arquivogui, f'{arquivogui}.backup{datetime.now().strftime("%Y%m%d%H%M%S")}')               
+            os.rename(f"{arquivogui}.part", arquivogui)
+            if platform.system() == "Linux":
+                os.chmod(arquivogui, stat.S_IXUSR | stat.S_IREAD)
+
+            if os.path.exists(arquivocmd):
+                os.rename(arquivocmd, f'{arquivocmd}.backup{datetime.now().strftime("%Y%m%d%H%M%S")}')               
+            os.rename(f"{arquivocmd}.part", arquivocmd)
+            if platform.system() == "Linux":
+                os.chmod(arquivocmd, stat.S_IXUSR | stat.S_IREAD)
+
+
+            make_shortcut(f"{os.getcwd()}{arquivogui}", name='Validador Tributário', description="Validador Tributário", icon=None)
+
+            page.clean()
+            page.add(
+                ft.Text("Instalação Concluida:\n\nNecessário reiniciar o aplicativo."),
+            )
+            page.update()
+
+        else:
+            page.clean()
+            page.add(
+                BarraSuperior("/ Erro "),
+                ft.Text(f"Erro de conexão ou arquivo inexistente (Erro {response.status_code}): tente novamente mais tarde"),
+                BarraInferior(),
+            )
+            page.update()                
+ 
+
     def relatorio(idx):
 
         global fmt, arquivosenha,  RepositorioAppLocal, vpcnt, cntanon0, tcodec, cnpj_, ano_, prest_, log_, pathprestok
 
-        #pathprestok = f"{log_}/RelatorioValidatorTributario_{re.sub(r"[^A-Za-z0-9_()]", "",cnpj_)}_{ano_}"
-        # path = f"{logcmd_}/RelatorioValidatorTributario_{pathprestok}.md"
-        # with open(path, 'r', encoding="utf-8") as file:
-        #     resumo = file.read()
-
-        #base64_str = b.decode('utf-8') base64.b64decode
 
         relhtml = base64.b64decode(cmd_interface(["python", cmdline, "--file", relanteriores['relatorios'][idx]['relatorio-html']['arquivo'] ], True)) 
         fmt =  json.loads(base64.b64decode(cmd_interface(["python", cmdline, "--file", relanteriores['relatorios'][idx]['dataframes-template'] ], True)))
 
-        #fmt = json.loads(base64.b64decode(cmd_interface(["python", cmdline, "--file", relanteriores['relatorios'][idx]['dataframes-template'] ], True)))
-        #fmt = base64.b64decode(cmd_interface(["python", cmdline, "--file", relanteriores['relatorios'][idx]['dataframes-template'] ], True)) 
 
         resumo = md(relhtml) # d.value
-
-        #print(f"{fmt}")
-
-        # path = f"{logcmd_}/RelatorioValidatorTributario_{pathprestok}.testpage.json"
-        # with open(path, 'r', encoding="utf-8") as file:
-        #     testpage = file.read()
-
-        #text = ft.Text(value=relhtml, selectable=True)    
+ 
 
         def baixar(e):
             print(e.control.data)
@@ -1202,52 +1335,6 @@ async def main(page: ft.Page):
     def cmd_script(e):
 
         global relanteriores, arquivosenha, RepositorioAppLocal, vpcnt, cntanon0, tcodec, cnpj_, ano_, prest_, log_, pathprestok
-
-        # if len(ano_ft.value) == 4 and int(ano_ft.value) > 2010:
-        #     ano_ = ano_ft.value
-
-        # c = ""
-        # if pycpfcnpj.cnpj.validate(re.sub(r"[^0-9]", "", cnpj_ft.value)):
-        #     c = re.sub(r"[^0-9]", "", cnpj_ft.value) # # pycpfcnpj.cpfcnpj.clear_punctuation(cnpj_ft.value)
-
-        # #listatemporaria = []
-        # if pastaRaiz == "/" or c == "" or ano_ == "" :
-        #     page.scroll = "none"
-        #     page.clean()
-        #     page.add(
-        #         BarraSuperior("/ erro"),
-        #         Container(Text("Necessário selecionar a pasta raiz e preencher corretamente o CNPJ da matriz e o Ano Fiscal !", bgcolor="white",  expand=True)),
-        #         ft.ElevatedButton("voltar", on_click=pg_ini),
-        #         BarraInferior(), 
-        #     )
-
-        # cnpj_ = c
-
-        # # salva_offline('cnpj',cnpj_)
-        # # salva_offline('ano',ano_)
-        # # salva_offline('prest',prest_)
-
-
-        # debug(e)
-
-        # #threading.Thread(target=f, args=(arg1, arg2)).start()
-        # # python validadorTributario202409160000.py 
-        # cmd_args = '/home/sergiosq/teletrabalho/tmp/trib/in 00497373003216 2022  /home/sergiosq/teletrabalho/tmp/trib/out descrição opcional' 
-
-
-        # # with open(f"{logcmd_}/progresso.log", 'a', encoding="utf-8") as file:
-        # #     file.write( "\nIniciando: Descompactando e contando arquivos\n")
-
-
-        # # debug(f"python {cmdline} {pastaRaiz} {cnpj_} {ano_} {logcmd_}")
-
-        # remove_offline('res_brutos')
-        # remove_offline('expandida')
-        # remove_offline('filtrada')
-
-        # print(f"python {cmdline} {pastaRaiz} {cnpj_} {ano_} ")
-        # # debug(f"python {cmdline} {pastaRaiz} {cnpj_} {ano_} {logcmd_}")
-
 
 
         progresso()
