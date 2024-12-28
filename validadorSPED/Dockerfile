@@ -6,10 +6,10 @@ FROM python:3
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
+COPY pyproject.toml ./
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv pip install -r pyproject.toml
 
 COPY . .
 
-CMD [ "python", "./ValidadorTributario.py" ]
+CMD [ "./validadorSPED" ]

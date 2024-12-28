@@ -36,10 +36,8 @@ import hashlib
 import requests
 import pandas as pd
 import unicodedata
-from cnpj import CNPJClient
 import pyperclip
 import pickle 
-from pprint import pprint
 
 ### Autor Gui
 ###
@@ -64,40 +62,30 @@ from pprint import pprint
 ### https://flet.dev/ ; https://flutter.dev/ 
 
 
-###
-### Provisoriamente para testes iniciais a gui fica no memso arquivo
-### "\nData da consulta na SRF: " + str(datetime.today()) + ""
+gui_default_app = "GuiApp"
+
+VersionFile = "https://raw.githubusercontent.com/InovaFiscaliza/.github/refs/heads/main/releases/VersionFile.json"
+
+gui_default_pyproject.toml = "http://testando:13000/testes/ValidadorTributario/raw/master/pyproject.toml" # "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/validadorSPED/pyproject.toml" # "http://testando:13000/testes/ValidadorTributario/raw/master/pyproject.toml"
+
+cmd_default_Dockerfile = "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile" # "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/validadorSPED/Dockerfile" # "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile"
+
+default_nomeappgui = "Gui trivial para linha de comando"
 
 
-    
-arquivogui = "GuiApp"
-arquivoguipy = f"{arquivogui}.py"
-if platform.system() == "Windows":
-   arquivogui += ".exe"  
-arquivocmd = "ValidadorTributario"
-if platform.system() == "Windows":
-   arquivocmd += ".exe" 
-
-guiapplink = f"https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/dist/{arquivogui}" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
- 
-cmdapplink = f"https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/dist/{arquivocmd}" # "http://testando:13000/testes/ValidadorTributario/raw/master/GuiApp.py"
- 
-
-default_dockerfile = "https://raw.githubusercontent.com/InovaFiscaliza/RepositorioFerramentasGRs/refs/heads/main/ValidadorTributario/Dockerfile" # "http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile"
-
-nomeapp = "Gui trivial para linha de comando"
-nomeappgui = nomeapp
+nomeapp = default_nomeappgui
+nomeappgui = default_nomeappgui
 
 cmdline = "ping"
 
-descapp = "Gui trivial para linha de comando"
+descapp = default_nomeappgui
 
 
-appver = "Versão beta Gui 202412151700 " 
+appver = "Versão beta Gui 0.1" 
 
 arquivosenha = "corrigir_este_codigo.txt"
 
-txtwarn = "Gui trivial para linha de comando.\n"
+txtwarn = default_nomeappgui
 
 
 maxbufff = 4096
@@ -152,6 +140,113 @@ debug("#########################################################################
 debug(os.environ)
 
 
+def adjAmbienteSO(idx):
+
+    # tratar todas convenções de nomes aqui quando necessário
+    # cfg['_gui_']['cmd-app']
+
+    ao = f"{cfg[idx]['cmd-app']}-{cfg[idx]['versao-disponivel-app']}-{platform.system()}_{platform.machine()}"
+    if platform.system() == "Linux":
+        ao += f""
+    elif platform.system() == "Windows":
+        ao += f".exe"    
+    elif platform.system() == "Mac":
+        ao += f".app"    
+    elif platform.system() == "Android":
+        ao += f".apk"  
+
+    # # implementar whl
+    # cwd = os.getcwd()
+    # if cwd == __file__[0:len(cwd)]:
+    #     # f"{dist}-{version}(-{build})?-{python.version}-{os_platform}.whl" # exemplo-0.1.0-py3-none-any.whl
+    #     f"{cfg[idx]['cmd-app']}-{cfg[idx]['versao-disponivel-app']}-py3-none-any.whl"
+
+    return ao
+
+
+def getetag(link):
+
+    etag = ""
+
+    try:
+        headers = {"Range": "bytes=0-0"}
+        response = requests.get(f"{link}", headers=headers, stream=True)
+        response.raw.decode_content = True
+
+        totalbits = 0
+        if response.status_code == 206:
+            try:
+                etag += response.headers['ETag']
+            except:
+                etag += response.headers['Last-Modified']
+
+    except:
+        pass
+
+    return etag
+
+
+
+def tratadockerfile(dfstr):
+
+    # LABEL org.opencontainers.image.title 
+    # LABEL org.opencontainers.image.description 
+    # CMD 
+
+    res = {}
+
+    for line in dfstr.splitlines():
+        
+        partes = re.search(f'LABEL org.opencontainers.image.title (.*)', line )
+        if partes:
+            res['title'] = partes.group(1)
+        
+        partes = re.search(f'LABEL org.opencontainers.image.description (.*)', line )
+        if partes:
+            res['description'] = partes.group(1)
+        
+        partes = re.search('CMD .*/([A-Za-z0-9]*)', line ) # 
+        if partes:
+            res['cmd']= partes.group(1)
+
+
+    return res
+
+def tratapyproject(ppstr):
+
+    # version =
+    # DOWNLOAD =
+    # HomePage =
+    # name =
+    # description =
+
+    res = {}
+
+    for line in ppstr.splitlines():
+
+        partes = re.search(f'name = "(.*)"', line )
+        if partes:
+            res['name'] = partes.group(1)
+
+        partes = re.search(f'description = "(.*)"', line )
+        if partes:
+            res['description'] = partes.group(1)
+
+        partes = re.search(f'version = "(.*)"', line )
+        if partes:
+            res['version'] = partes.group(1)
+        
+        partes = re.search(f'DOWNLOAD = "(.*)"', line )
+        if partes:
+            res['download'] = partes.group(1)
+        
+        partes = re.search('HomePage = "(.*)"', line ) # 
+        if partes:
+            res['homepage'] = partes.group(1)
+
+    return res    
+
+
 def fmtnome(name):
 
     ret = ""
@@ -168,7 +263,6 @@ def fmtnome(name):
 def cmd_interface(cmd_,comm): #   
 
     cwd = os.getcwd()
-    print(f"os.getcwd() :  {cwd} __file__[0:len(cwd)] : {__file__[0:len(cwd)]}")
 
     #cmd = cmd_
     if cwd != __file__[0:len(cwd)]: # se não for o python nativo do SO
@@ -219,72 +313,16 @@ def salva_debug_backup(key, value):
         f.write(value)  
     return True
 
-def le_offlinexxx(key):
+def if_debug():
 
-    value = ""
-    # if await page.client_storage.contains_key_async(str(key+nomeapp)):  # debug ?
-    #     value = await page.client_storage.get_async(str(key+nomeapp))
-    # else:
-    #     pass #await salva_offline(str(key), default)  
-    
-    sha256 = hashlib.sha256()
-    sha256.update(nomeappgui.encode('utf-8'))
-    try:
-        with open(RepositorioAppLocal+"/"+sha256.hexdigest()+"/"+key, 'r', encoding="utf-8") as file:
-            value = file.read()
-    except:
-        pass 
-        debug(f"erro le_offline: {RepositorioAppLocal}/{sha256.hexdigest()}/{key}")
-    return value
-
-
-def remove_offlinexxx(key):
-
-    #page.client_storage # shutil.rmtree(RepositorioAppLocal+"/out") # debug ?
-    sha256 = hashlib.sha256()
-    sha256.update(nomeappgui.encode('utf-8'))
-    if os.path.isfile(RepositorioAppLocal+"/"+sha256.hexdigest()+"/"+key):
-        os.remove(RepositorioAppLocal+"/"+sha256.hexdigest()+"/"+key) 
-
-    return True
-
-
-def existexxx(key):
-
+    key = "debug"
     value = False
-    # if await page.client_storage.contains_key_async(str(key+nomeapp)):  # debug ?
-    #     value = True
+
     sha256 = hashlib.sha256()
     sha256.update(nomeappgui.encode('utf-8'))
     value = os.path.isfile(RepositorioAppLocal+"/"+sha256.hexdigest()+"/"+key)
 
     return value
-
-def lista_offlinexxx(filtro):
-
-    res = []
-    
-    value = ""
-
-    sha256 = hashlib.sha256()
-    sha256.update(nomeappgui.encode('utf-8'))
-    pathori = f"{RepositorioAppLocal}/{sha256.hexdigest()}"
-    Path(pathori).mkdir(parents=True, exist_ok=True)
-
-    paths = sorted(Path(pathori).iterdir(), key=os.path.getmtime)
-
-    paths.reverse()
-    for entry in paths:
-        tmp = os.path.split(entry)
-        #print(f"reverse paths entry: \n{tmp[1]} {st.st_mtime}\n")   
-        partes = re.search(filtro, tmp[1] ) 
-        if partes:
-                st = entry.stat()
-                print(f"config encontrado: {tmp[1]} {st.st_mtime}")
-                res.append(tmp[1])
-    
-    print(f"lista_offline: \n{res}")
-    return res      
 
 
 
@@ -349,6 +387,23 @@ async def main(page: ft.Page):
 
         global cfg
 
+        cfg['_gui_']['download-app']
+        cfg[cfg['_gui_'][['default-cmd']]]['download-app']
+
+        getetag(cfg[0]['download-app']) # gui
+        getetag(cfg[cfg[0][['default-cmd']]]['download-app']) # cmd
+
+        cfg[0]['etag-disponivel-app'] = getetag(cfg[0]['download-app'])
+        cfg[cfg[0][['default-cmd']]]['etag-disponivel-app']
+
+
+
+
+
+
+
+
+
         tst = ""
         part = -1
         while True:
@@ -371,8 +426,8 @@ async def main(page: ft.Page):
 
             elif ( response.status_code == 404 ) & ( part > 0 ):
                 
-                cfg['versao-disponivel-gui'] = tst
-                print(f"*** cfg['versao-disponivel-gui']: {cfg['versao-disponivel-gui']} -- cfg['versao-em-uso-gui']: {cfg['versao-em-uso-gui']}")
+                cfg['etag-disponivel-gui'] = tst
+                print(f"*** cfg['etag-disponivel-gui']: {cfg['etag-disponivel-gui']} -- cfg['etag-em-uso-gui']: {cfg['etag-em-uso-gui']}")
                 break
 
             else:
@@ -402,8 +457,8 @@ async def main(page: ft.Page):
 
             elif ( response.status_code == 404 ) & ( part > 0 ):
                 
-                cfg['versao-disponivel-app'] = tst
-                print(f"*** cfg['versao-disponivel-app']: {cfg['versao-disponivel-app']} -- cfg['versao-em-uso-app']: {cfg['versao-em-uso-app']}")
+                cfg['etag-disponivel-app'] = tst
+                print(f"*** cfg['etag-disponivel-app']: {cfg['etag-disponivel-app']} -- cfg['etag-em-uso-app']: {cfg['etag-em-uso-app']}")
                 break
 
             else:
@@ -420,28 +475,91 @@ async def main(page: ft.Page):
         print(f"*** inicio config {data0}")
         print(f'*** inicio config {data0.strftime("%d/%m/%Y %H:%M:%S")}')
 
-        if True: #if not await existe('cfg.json'):
+        if True: #if not await existe('cfg.json'): ### Só no primeiro uso
 
             try:
 
-                lista_offline(f'__config__(.*)__$')
-
-                data0 = datetime.now()
-                print(f'*** leu lista_offline {data0.strftime("%d/%m/%Y %H:%M:%S")}')
-
                 cfg = {}
-                cfg['versao-disponivel-gui'] = ""
-                cfg['versao-disponivel-app'] = ""
-                cfg['versao-em-uso-gui'] = ""
-                cfg['versao-em-uso-app'] = ""
+
+                ############ gui
+
+                cfg['_gui_'] = {}
+                cfg['_gui_']['default-cmd'] = "" # versao cmd atual
+                cfg['_gui_']['link-dockerfile'] = ""
+                cfg['_gui_']['link-pyproject.toml'] = gui_default_pyproject.toml
+
+                respypr = requests.get(cfg['_gui_']['link-pyproject.toml'])
+
+                if respypr.status_code == 200:
+
+                    res = tratapyproject(respypr.text)   
+
+                    if cmd_default_Dockerfile[:-10] == gui_default_pyproject.toml[:-14]: # se no mesmo projeto
+
+
+                        cfg['_gui_']['nome-app'] = res['title']
+                        cfg['_gui_']['descricao-app'] = default_nomeappgui
+                        cfg['_gui_']['cmd-app'] = gui_default_app
+
+                    else:
+
+                        # cfg['_gui_']['link-dockerfile'] = ""
+                        # cfg['_gui_']['link-pyproject.toml'] = gui_default_pyproject.toml
+                        cfg['_gui_']['nome-app'] = res['name']
+                        cfg['_gui_']['descricao-app'] = res['description']
+                        cfg['_gui_']['cmd-app'] = gui_default_app
+
+                    cfg['_gui_']['versao-em-uso-app'] = res['version'] 
+                    cfg['_gui_']['versao-disponivel-app'] = res['version']
+                    cfg['_gui_']['download-app'] = f"{res['download'][:(res['download'].rfind('/') + 1)]}"
+                    cfg['_gui_']['etag-em-uso-app'] = cfg['_gui_']['etag-disponivel-app'] # opcional se versão fizer parte do nome em downloads
+                    cfg['_gui_']['etag-disponivel-app'] = cfg['_gui_']['etag-disponivel-app'] # opcional se versão fizer parte do nome em downloads
+                    cfg['_gui_']['args-app'] = ""
+
+                ############ cmd
+
+                sha256 = hashlib.sha256()
+                sha256.update(cmd_default_Dockerfile.encode('utf-8'))
+                idx = sha256.hexdigest()
+
+                cfg[idx] = {}
+                cfg[idx]['link-dockerfile'] = cmd_default_Dockerfile
+                cfg[idx]['link-pyproject.toml'] = f"{tmp['link-dockerfile'][:(tmp['link-dockerfile'].rfind('/') + 1)]}{pyproject.toml}"
+
+                resdock = requests.get(cfg[idx]['link-dockerfile'])
+
+                respypr = requests.get(cfg[idx]['link-pyproject.toml'])
+
+                if (resdock.status_code == 200 ) & (respypr.status_code == 200 ):
+
+                    tpp = tratapyproject(respypr.text)   
+                    tdk = tratadockerfile(resdock.text)  
+
+                    cfg[idx]['nome-app'] = tdk['name']
+                    cfg[idx]['descricao-app'] = tdk['description']
+                    cfg[idx]['cmd-app'] = tdk['cmd']
+
+                    cfg[idx]['versao-disponivel-app'] = tpp['version'] 
+                    cfg[idx]['versao-em-uso-app'] = tpp['version'] 
+                    cfg[idx]['download-app'] = f"{tpp['download'][:(tpp['download'].rfind('/') + 1)]}"
+                    cfg[idx]['etag-disponivel-app'] = getetag(cfg[idx]['download-app']) 
+                    cfg[idx]['etag-em-uso-app'] = cfg[idx]['etag-disponivel-app']
+                    cfg[idx]['args-app'] = ""
+
+                    cfg['_gui_']['default-cmd'] = cfg[idx]['id']
+
+
+
+                #############
+
                 atualizacoes()
                 dockerfile = ""
                 requirements = ""
                 appfile  = ""
 
                 # esta gui
-                cfg['versao-em-uso-gui'] = cfg['versao-disponivel-gui']
-                cfg['versao-em-uso-app'] = cfg['versao-disponivel-app']
+                cfg['etag-em-uso-gui'] = cfg['etag-disponivel-gui']
+                cfg['etag-em-uso-app'] = cfg['etag-disponivel-app']
 
 
                 pathdockerfile = default_dockerfile
@@ -465,7 +583,7 @@ async def main(page: ft.Page):
                         if partes:
                             descapp0 = partes.group(1)
                         
-                        partes = re.search('CMD . .python., ../(.*). .', line ) # 
+                        partes = re.search('CMD . .python., ../(.*).py. .', line ) # 
                         if partes:
                             cmdline0 = partes.group(1)
 
@@ -623,19 +741,19 @@ async def main(page: ft.Page):
 
 
                 await salva_offline('cfg.json', json.dumps(cfg)) # 
-                await salva_offline(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
-                await salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
-                await salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
-                await salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
+                await salva_offline(f"GuiApp.py_{fmtnome(cfg['etag-em-uso-gui'])}.bak", gui.text)
+                await salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['etag-em-uso-app'])}.bak", dockerfile)
+                await salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['etag-em-uso-app'])}.bak", requirements)
+                await salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['etag-em-uso-app'])}.bak", appfile)
 
                 # debug e backup
 
 
                 salva_debug_backup('cfg.json', json.dumps(cfg)) # 
-                salva_debug_backup(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
-                salva_debug_backup(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
-                salva_debug_backup(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
-                salva_debug_backup(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
+                salva_debug_backup(f"GuiApp.py_{fmtnome(cfg['etag-em-uso-gui'])}.bak", gui.text)
+                salva_debug_backup(f"{cfg['id']}/dockerfile_{fmtnome(cfg['etag-em-uso-app'])}.bak", dockerfile)
+                salva_debug_backup(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['etag-em-uso-app'])}.bak", requirements)
+                salva_debug_backup(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['etag-em-uso-app'])}.bak", appfile)
 
                 # http://testando:13000/testes/ValidadorTributario/raw/master/Dockerfile
                 # http://testando:13000/testes/ValidadorTributario/raw/master/requirements.txt
@@ -847,14 +965,14 @@ async def main(page: ft.Page):
     #         instalaGuiApp()
     #         page.update()
 
-    #     #(cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']) | (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app'])
+    #     #(cfg['etag-disponivel-gui'] != cfg['etag-em-uso-gui']) | (cfg['etag-disponivel-app'] != cfg['etag-em-uso-app'])
     #     def novasversoes():
 
     #         txt = ""
-    #         if (cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']):
+    #         if (cfg['etag-disponivel-gui'] != cfg['etag-em-uso-gui']):
     #             txt += f"\nExiste uma nova versão da GUI disponível\n"
 
-    #         if (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app']):  
+    #         if (cfg['etag-disponivel-app'] != cfg['etag-em-uso-app']):  
     #             txt += f"\nExiste uma nova versão do App disponível\n"  
 
     #         return txt
@@ -880,10 +998,10 @@ async def main(page: ft.Page):
         def novasversoes():
 
             txt = ""
-            if (cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']):
+            if (cfg['etag-disponivel-gui'] != cfg['etag-em-uso-gui']):
                 txt += f"\nExiste uma nova versão da GUI disponível\n"
 
-            if (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app']):  
+            if (cfg['etag-disponivel-app'] != cfg['etag-em-uso-app']):  
                 txt += f"\nExiste uma nova versão do App disponível\n"  
 
             return txt
@@ -907,19 +1025,19 @@ async def main(page: ft.Page):
 
         # pathori = f"{RepositorioAppLocal}/{sha256.hexdigest()}"
 
-        # print(f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak")
+        # print(f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['etag-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak")
         # print(Path(__file__).parent.resolve())
 
-        # shutil.copy(f"{Path(__file__).parent.resolve()}/{os.path.basename(__file__)}", f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['versao-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak") 
+        # shutil.copy(f"{Path(__file__).parent.resolve()}/{os.path.basename(__file__)}", f"{RepositorioAppLocal}/{sha256.hexdigest()}/{fmtnome(os.path.basename(__file__))}_{fmtnome(cfg['etag-em-uso-gui'])}_{fmtnome(str(datetime.now()))}.bak") 
 
-        # shutil.copy( f"{Path(__file__).parent.resolve()}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
+        # shutil.copy( f"{Path(__file__).parent.resolve()}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['etag-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
 
-        # # salva_offline(f"GuiApp.py_{fmtnome(cfg['versao-em-uso-gui'])}.bak", gui.text)
-        # # salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['versao-em-uso-app'])}.bak", dockerfile)
-        # # salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['versao-em-uso-app'])}.bak", requirements)
-        # # salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}.bak", appfile)
+        # # salva_offline(f"GuiApp.py_{fmtnome(cfg['etag-em-uso-gui'])}.bak", gui.text)
+        # # salva_offline(f"{cfg['id']}/dockerfile_{fmtnome(cfg['etag-em-uso-app'])}.bak", dockerfile)
+        # # salva_offline(f"{cfg['id']}/requirements.txt_{fmtnome(cfg['etag-em-uso-app'])}.bak", requirements)
+        # # salva_offline(f"{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['etag-em-uso-app'])}.bak", appfile)
 
-        # #shutil.copy( f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['versao-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
+        # #shutil.copy( f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}" , f"{RepositorioAppLocal}/{sha256.hexdigest()}/{cfg['id']}/{cfg['cmd-app']}_{fmtnome(cfg['etag-em-uso-app'])}_{fmtnome(str(datetime.now()))}.bak" )
 
         # page.window_close()
         # page.window_destroy()
@@ -971,7 +1089,7 @@ async def main(page: ft.Page):
         ret = ""
 
         upgrade0 = ft.Text()
-        if (cfg['versao-disponivel-gui'] != cfg['versao-em-uso-gui']) | (cfg['versao-disponivel-app'] != cfg['versao-em-uso-app']) :
+        if (cfg['etag-disponivel-gui'] != cfg['etag-em-uso-gui']) | (cfg['etag-disponivel-app'] != cfg['etag-em-uso-app']) :
             upgrade0 = ft.IconButton(ft.icons.UPGRADE,icon_color="white", on_click=upgrade)
 
         if re.search(r"elatório", title) :
@@ -1184,8 +1302,8 @@ async def main(page: ft.Page):
 
 
             make_shortcut(f"{os.getcwd()}{arquivogui}", name='Validador Tributário', description="Validador Tributário", icon=None)
-            cfg['versao-em-uso-gui'] = cfg['versao-disponivel-gui']
-            cfg['versao-em-uso-app'] = cfg['versao-disponivel-app']
+            cfg['etag-em-uso-gui'] = cfg['etag-disponivel-gui']
+            cfg['etag-em-uso-app'] = cfg['etag-disponivel-app']
 
 
             page.clean()

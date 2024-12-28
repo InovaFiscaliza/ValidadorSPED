@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Validador Tributario: 
@@ -60,7 +60,6 @@ from charset_normalizer import detect
 import py7zr
 import zipfile
 import json
-import paramiko
 from nbformat import read, write, NO_CONVERT
 from datetime import datetime
 import calendar
@@ -73,8 +72,8 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import pycpfcnpj
 import unicodedata
-from cnpj import CNPJClient
 from markdownify import markdownify as md
+#from pycpfcnpj import cnpj.CNPJClient
 #from pycpfcnpj import cpfcnpj
 #from pycpfcnpj import mask
 
@@ -4839,13 +4838,13 @@ def descompacta_e_verifica():
     cnpj_ = c[0:2] + "." + c[2:5] + "." + c[5:8] + "/" + c[8:12] + "-" + c[12:14]
 
 
-    cnpj_client = CNPJClient()
+    cnpj_client = cnpj.CNPJClient()
     try:
         res = cnpj_client.cnpj(pycpfcnpj.cpfcnpj.clear_punctuation(cnpj_)) 
         prest_ = res['razao_social']
     except:
         errcon = True
-        debug("Erro em consulta via biblioteca CNPJClient")
+        debug("Erro em consulta via biblioteca cnpj.CNPJClient")
         prest_ = ""   
 
     # apaga todos resultados
@@ -4896,7 +4895,7 @@ debug(os.environ)
 if __name__ == "__main__":
 
     log(f"Arguments: {sys.argv}" )
-    args = docopt(__doc__, version="202412151700")
+    args = docopt(__doc__, version="202412271800")
 
 
 

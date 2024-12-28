@@ -1,0 +1,75 @@
+[project]
+name = "validadorSPED"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  {name = "Sérgio S. Q."},
+  {name = "Elio A. B."},
+]
+maintainers = [
+  {name = "Sérgio S. Q."}
+]
+dependencies = [
+  "docopt==0.6.2",
+  "schema==0.7.7",
+  "pandasql==0.7.3",
+  "chardet==5.2.0",
+  "py7zr==0.21.1",
+  "paramiko==3.4.0",
+  "nbformat==5.10.4",
+  "pycpfcnpj==1.8",
+  "requests==2.31.0",
+  "pandas==2.2.2",
+  "markdownify==0.13.1",
+  "flet==0.25.2",
+  "pyshortcuts==1.9.5",
+  "pyperclip==1.9.0",
+]
+[project.optional-dependencies]
+gui = ["flet-cli==0.25.2"]
+cli = [
+  "rich",
+  "click",
+]
+
+#[console_scripts]
+#foo = foomod:main
+# One which depends on extras:
+#foobar = foomod:main_bar [bar,baz]
+
+#[gui_scripts]
+#foo = foomod:main
+# One which depends on extras:
+#foobar = foomod:main_bar [bar,baz]
+
+[project.scripts]
+validadorSPED = "validadorSPED.py"
+#GuiApp = "GuiApp:main"
+
+[project.gui-scripts]
+GuiApp = "GuiApp:main"
+
+[project.urls]
+HomePage = "https://anatel365.sharepoint.com/sites/InovaFiscaliza/SitePages/validadorSPED.aspx"
+DOWNLOAD = "http://testando:13000/testes/ValidadorTributario/raw/master/"
+
+[tool.flet]
+# org name in reverse domain name notation, e.g. "com.mycompany".
+# Combined with project.name to build bundle ID for iOS and Android apps
+org = "br.anatel.validadorsped"
+
+# project display name that is used as an app title on Android and iOS home screens,
+# shown in window titles and about app dialogs on desktop.
+product = "validadorSPED"
+
+# company name to display in about app dialogs
+company = "Anatel"
+
+# copyright text to display in about app dialogs
+copyright = "Copyright (C) 2024"
+license = {file = "LICENSE.txt"}
+
+[tool.flet.app]
+path = "src"
