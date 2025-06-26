@@ -1,21 +1,7 @@
-**Repositório de Ferramentas dos GRs** 
+**Validador SPED** 
 
-O objetivo é encorajar e facilitar o compartilhamento e reuso de experiências onde possível.
+Esta ferramenta é destinada à validação em lote de arquivos SPED, tendo como entrada pastas e/ou arquivos compactados contendo múltiplos arquivos SPED.
 
-Os códigos podem variar desde os mais simples que resolveram alguma questão para alguma demanda específica, que podem servir para não se partir do zero em alguma nova demanda e ser melhorado, até soluções completas que eventualmente poderão migrar para ambiente de produção para demandas recorrentes.
+É verificada a integridade dos arquivos e se estes correspondem aos arquivos reportados à Receita Federal, utilizando serviço disponibilizado pela RFB.
 
-Os códigos estão sendo atualizados na medida em que são recebidos, segundo a disponibilidade dos colegas desenvolvedores e mantenedores que estão compartilhando as soluções.
-
-# Índice
-
-# Em anonimização e revisão
-
-https://github.com/InovaFiscaliza/RepositorioFerramentasGRs.priv
-
-# Outros links
-
-https://git.anatel.gov.br/carlos.cesar/bdme
-
-https://git.anatel.gov.br/cleyton/fiscalizacao-radiodifusao
-
-https://git.anatel.gov.br/arthur
+Como resultado é produzido sumário, mês a mês do conteúdo dos arquivos.
